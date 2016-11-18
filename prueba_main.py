@@ -19,14 +19,14 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
-batch_size = 10#200   #10
+batch_size = 200#200   #10
 nb_classes = 2    #5
-nb_epoch = 10#400    #250
+nb_epoch = 400   #250
 data_augmentation = False#True
 
-nb_samples=20#1000 #35123  #20
-nb_train_samples=10#800#28000 #10
-nb_test_samples=10#200 #7123  #10
+nb_samples=1000 #35123  #20
+nb_train_samples=800#28000 #10
+nb_test_samples=200 #7123  #10
 
 # input image dimensions
 img_rows, img_cols = 256, 256
@@ -72,10 +72,10 @@ print "Split Data..."
 X_train = X_data[0:nb_train_samples]
 Y_train = Y_label[0:nb_train_samples]
 
-X_test = X_train
-Y_test = Y_train
-#X_test = X_data[nb_train_samples:nb_samples]
-#Y_test = Y_label[nb_train_samples:nb_samples]
+#X_test = X_train
+#Y_test = Y_train
+X_test = X_data[nb_train_samples:nb_samples]
+Y_test = Y_label[nb_train_samples:nb_samples]
 
 print('X_train shape:', X_train.shape)
 print(X_train.shape[0], 'train samples')
