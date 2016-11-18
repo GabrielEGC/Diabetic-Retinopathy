@@ -21,7 +21,7 @@ K.set_image_dim_ordering('th')
 
 batch_size = 10#200   #10
 nb_classes = 2    #5
-nb_epoch = 400#400    #250
+nb_epoch = 10#400    #250
 data_augmentation = False#True
 
 nb_samples=20#1000 #35123  #20
@@ -194,7 +194,7 @@ epocas = []
 for i in range(nb_epoch):
   epocas.append(i)
 
-pyplot.figure()
+pyplot.figure(figsize=(19,12),dpi=100)
 pyplot.suptitle('Train: '+str(nb_train_samples) + '\t' + 'Test: '+str(nb_test_samples), fontsize="x-large")
 
 pyplot.subplot(2,2,1)
