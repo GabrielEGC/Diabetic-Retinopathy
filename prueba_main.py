@@ -20,7 +20,7 @@ from keras import backend as K
 K.set_image_dim_ordering('th')
 
 batch_size = 100   #10
-nb_classes = 5    #5
+nb_classes = 2    #5
 nb_epoch = 400    #250
 data_augmentation = False
 
@@ -57,13 +57,16 @@ for f in aux: #sorted(glob.glob("/home/ubuntu-ssd/Documents/INIFIM/classificatio
   img=cv2.imread(ruta) 
   img=img.transpose(2, 0, 1)
   img = img.reshape((1,) + img.shape)
-  #if i%10000==0 :
-  print i+1,") ",'\t', f, '\t', Y_label[i]
+  if i%100==0 :
+    print i+1,") ",'\t', f, '\t', Y_label[i]
   X_data[i,:,:,:] = img
   i= i +1
   if i==nb_samples:
   	break
 
+# binary labels (sano: 0 , enfermo: 1)
+Y_label_aux = Y_label>0
+Y_label = numpy.uint8(Y_label_aux)
 print "-----------------------------"
 print "Split Data..."
 X_train = X_data[0:nb_train_samples]
