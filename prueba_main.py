@@ -19,14 +19,16 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
-batch_size = 200#200   #10
+batch_size = 10   #10
 nb_classes = 2    #5
 nb_epoch = 400   #250
 data_augmentation = False#True
 
-nb_samples=1000 #35123  #20
-nb_train_samples=800#28000 #10
-nb_test_samples=200 #7123  #10
+#left 17561
+#rigth 17562
+nb_samples=20 #35123  #20
+nb_train_samples=10#28000 #10
+nb_test_samples=10 #7123  #10
 
 # input image dimensions
 img_rows, img_cols = 256, 256
@@ -41,7 +43,7 @@ aux = []
 print "-----------------------------"
 print "Loading dataset..."
 j=0
-with open('/home/ubuntu-ssd/Documents/INIFIM/classification/data/trainLabels.csv', 'rb') as csvfile:
+with open('/home/ubuntu-ssd/Documents/INIFIM/classification/data/trainLabels-DL.csv', 'rb') as csvfile:
      trainlabels = csv.reader(csvfile, delimiter=',')
      for row in trainlabels:
       Y_label[j,] = numpy.uint8(row[1])
@@ -72,10 +74,10 @@ print "Split Data..."
 X_train = X_data[0:nb_train_samples]
 Y_train = Y_label[0:nb_train_samples]
 
-#X_test = X_train
-#Y_test = Y_train
-X_test = X_data[nb_train_samples:nb_samples]
-Y_test = Y_label[nb_train_samples:nb_samples]
+X_test = X_train
+Y_test = Y_train
+#X_test = X_data[nb_train_samples:nb_samples]
+#Y_test = Y_label[nb_train_samples:nb_samples]
 
 print('X_train shape:', X_train.shape)
 print(X_train.shape[0], 'train samples')
@@ -200,7 +202,7 @@ pyplot.suptitle('Train: '+str(nb_train_samples) + '\t' + 'Test: '+str(nb_test_sa
 pyplot.subplot(2,2,1)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('accuracy')
-pyplot.axis([0, nb_epoch*1.05, 0, 1.1])
+pyplot.axis([-5, nb_epoch*1.05, 0, 1.1])
 pyplot.title('Train acc')
 pyplot.plot(epocas,train_acc)
 
@@ -213,7 +215,7 @@ pyplot.plot(epocas,train_loss)
 pyplot.subplot(2,2,2)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('accuracy')
-pyplot.axis([0, nb_epoch*1.1, 0, 1.1])
+pyplot.axis([-5, nb_epoch*1.1, 0, 1.1])
 pyplot.title('Test acc')
 
 pyplot.plot(epocas,test_acc)
@@ -258,6 +260,27 @@ loaded_model.compile(loss='categorical_crossentropy',
 scores = loaded_model.evaluate(X_test, Y_test, verbose=0)
 print("Accuracy loaded model: %.2f%%" % (scores[1]*100))
 ##########################################################################################
+pyplot.figure(figsize=(19,12),dpi=100)
+prediction = model.predict(X_test)
+pyplot.subplot(2,1,2)
+pyplot.xlabel('prediction')
+pyplot.ylabel('Sample')
+pyplot.grid('on')
+pyplot.subplot(2,1,1)
+pyplot.xlabel('ground truth')
+pyplot.ylabel('Sample')
+pyplot.grid('on')
+
+for k in range(nb_test_samples):
+  pyplot.subplot(2,1,2)
+  pyplot.plot(numpy.asarray(prediction[k][1]), numpy.asarray([k]),'d')
+  pyplot.subplot(2,1,1)
+  pyplot.plot(Y_test[k,1], numpy.asarray([k]),'d')
+
+pyplot.axis([-0.1,1.1, -1,nb_test_samples+1 ])
+pyplot.savefig('prediction.png')
+pyplot.show()
+#print prediction
 '''
 aux_train = aux[0:nb_train_samples]
 aux_test = aux[nb_train_samples:nb_samples]
