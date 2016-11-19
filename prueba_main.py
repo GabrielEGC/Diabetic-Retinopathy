@@ -19,16 +19,16 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
-batch_size = 10   #10
+batch_size = 128   #10
 nb_classes = 2    #5
-nb_epoch = 400   #250
+nb_epoch = 1   #250
 data_augmentation = False#True
 
 #left 17561
 #rigth 17562
-nb_samples=20 #35123  #20
-nb_train_samples=10#28000 #10
-nb_test_samples=10 #7123  #10
+nb_samples=1000 #35123  #20
+nb_train_samples=900#28000 #10
+nb_test_samples=100 #7123  #10
 
 # input image dimensions
 img_rows, img_cols = 256, 256
@@ -260,24 +260,29 @@ loaded_model.compile(loss='categorical_crossentropy',
 scores = loaded_model.evaluate(X_test, Y_test, verbose=0)
 print("Accuracy loaded model: %.2f%%" % (scores[1]*100))
 ##########################################################################################
-pyplot.figure(figsize=(19,12),dpi=100)
 prediction = model.predict(X_test)
-pyplot.subplot(2,1,2)
+
+pyplot.figure(figsize=(19,12),dpi=100)
+pyplot.suptitle("Ground truth and prediction - 0->Ok , 1->RD ")
+
+pyplot.subplot(1,2,2)
+pyplot.axis([-0.1,1.1, -1,nb_test_samples+1 ])
 pyplot.xlabel('prediction')
 pyplot.ylabel('Sample')
 pyplot.grid('on')
-pyplot.subplot(2,1,1)
+pyplot.subplot(1,2,1)
+pyplot.axis([-0.1,1.1, -1,nb_test_samples+1 ])
 pyplot.xlabel('ground truth')
 pyplot.ylabel('Sample')
 pyplot.grid('on')
 
 for k in range(nb_test_samples):
-  pyplot.subplot(2,1,2)
+  pyplot.subplot(1,2,2)
   pyplot.plot(numpy.asarray(prediction[k][1]), numpy.asarray([k]),'d')
-  pyplot.subplot(2,1,1)
+  pyplot.subplot(1,2,1)
   pyplot.plot(Y_test[k,1], numpy.asarray([k]),'d')
 
-pyplot.axis([-0.1,1.1, -1,nb_test_samples+1 ])
+
 pyplot.savefig('prediction.png')
 pyplot.show()
 #print prediction
