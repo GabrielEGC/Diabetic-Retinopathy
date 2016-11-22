@@ -19,15 +19,15 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
-batch_size = 128   #10
+batch_size = 100#128   #10
 nb_classes = 2    #5
-nb_epoch = 1   #250
+nb_epoch = 1#400   #250
 data_augmentation = False#True
 
 #left 17561
 #rigth 17562
-nb_samples=1000 #35123  #20
-nb_train_samples=900#28000 #10
+nb_samples=200 #35123  #20
+nb_train_samples=100#28000 #10
 nb_test_samples=100 #7123  #10
 
 # input image dimensions
@@ -135,7 +135,7 @@ model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
 
 # let's train the model using SGD + momentum (how original).
-sgd = SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)  #lr=0.005
+sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)  #lr=0.005
 model.compile(loss='categorical_crossentropy',
               optimizer=sgd,
               metrics=['accuracy'])
@@ -260,7 +260,8 @@ loaded_model.compile(loss='categorical_crossentropy',
 scores = loaded_model.evaluate(X_test, Y_test, verbose=0)
 print("Accuracy loaded model: %.2f%%" % (scores[1]*100))
 ##########################################################################################
-prediction = model.predict(X_test)
+prediction = model.predict_classes(X_test)
+print prediction
 
 pyplot.figure(figsize=(19,12),dpi=100)
 pyplot.suptitle("Ground truth and prediction - 0->Ok , 1->RD ")
@@ -278,7 +279,7 @@ pyplot.grid('on')
 
 for k in range(nb_test_samples):
   pyplot.subplot(1,2,2)
-  pyplot.plot(numpy.asarray(prediction[k][1]), numpy.asarray([k]),'d')
+  pyplot.plot(numpy.asarray(prediction[k]), numpy.asarray([k]),'d')
   pyplot.subplot(1,2,1)
   pyplot.plot(Y_test[k,1], numpy.asarray([k]),'d')
 
