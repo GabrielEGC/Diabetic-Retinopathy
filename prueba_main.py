@@ -19,19 +19,19 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
-lr = 0.005
+lr = 0.001
 
-batch_size = 50#128   #10
+batch_size = 128#128   #10
 nb_classes = 2    #5
-nb_epoch = 400#400   #250
-data_augmentation = False#True
+nb_epoch = 400#400   #25
+data_augmentation = True#True
 
 side = "left"#right
 etiquetas = 17562 #numleft = 17562 #numrigth = 17562
-nb_train_samples=50
-nb_test_samples=50
+nb_train_samples=4000*2
+nb_test_samples=691*2
 nb_samples=nb_train_samples + nb_test_samples
-same=1
+same=0
 
 #Data por clases
 data_per_classes =1
@@ -45,13 +45,22 @@ img_channels = 3
 
 X_data = numpy.zeros((nb_samples, img_channels, img_rows, img_cols), dtype="uint8")
 Y_label = numpy.zeros((etiquetas,), dtype="uint8")
-aux = []
 
+'''
+left (de 1 a 2.74)
+0: 12870
+1: 4691
+
+Right (de 1 a 2.79)
+0: 12938
+1:4624
+'''
 ##############LOADIN DATA##########################################################
 print "-----------------------------"
 print "Loading dataset..."
 
 # Loading .csv -> etiquetas
+aux = []
 j=0
 if side == "left":
   ruta_csv = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/trainLabels-DL.csv'
@@ -78,8 +87,8 @@ if data_per_classes ==1:
     var = var.T
     data_0 = var[Y_label==0]
     data_1 = var[Y_label>0]
-    numpy.random.shuffle(data_0)
-    numpy.random.shuffle(data_1)
+    #numpy.random.shuffle(data_0)
+    #numpy.random.shuffle(data_1)
     data_t_0 = data_0[0:num_zero_class]
     data_t_1 = data_1[0:num_one_class]
     data_te_0 = data_0[num_zero_class:(num_zero_class+(nb_test_samples/2))]
@@ -116,9 +125,11 @@ Y_train = Y_label[0:nb_train_samples]
 if same==1:
   X_test = X_train
   Y_test = Y_train
+  print "SAME"
 else:
   X_test = X_data[nb_train_samples:nb_samples]
   Y_test = Y_label[nb_train_samples:nb_samples]
+  print "Diferente"
 
 print('X_train shape:', X_train.shape)
 print(X_train.shape[0], 'train samples')
@@ -136,44 +147,31 @@ print Y_train.shape
 
 model = Sequential()
 
-model.add(Convolution2D(16, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
-model.add(Activation('relu'))
-model.add(Convolution2D(16, 3, 3,border_mode='same'))
-model.add(Activation('relu'))
+model.add(Convolution2D(16, 3, 3, border_mode='same', input_shape=X_train.shape[1:], activation = 'relu'))
+model.add(Convolution2D(16, 3, 3, border_mode='same', activation = 'relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
   
-model.add(Convolution2D(32, 3, 3, border_mode='same'))
-model.add(Activation('relu'))
-model.add(Convolution2D(32, 3, 3,border_mode='same'))
-model.add(Activation('relu'))
+model.add(Convolution2D(32, 3, 3, border_mode='same', activation = 'relu'))
+model.add(Convolution2D(32, 3, 3, border_mode='same', activation = 'relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
-model.add(Convolution2D(64, 3, 3, border_mode='same'))
-model.add(Activation('relu'))
-model.add(Convolution2D(64, 3, 3,border_mode='same'))
-model.add(Activation('relu'))
+model.add(Convolution2D(64, 3, 3, border_mode='same', activation = 'relu'))
+model.add(Convolution2D(64, 3, 3, border_mode='same', activation = 'relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
-model.add(Convolution2D(96, 3, 3,border_mode='same'))
-model.add(Activation('relu'))
+model.add(Convolution2D(96, 3, 3, border_mode='same', activation = 'relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
-model.add(Convolution2D(96, 3, 3,border_mode='same'))
-model.add(Activation('relu'))
+model.add(Convolution2D(96, 3, 3, border_mode='same', activation = 'relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
-model.add(Convolution2D(128, 3, 3,border_mode='same'))
-model.add(Activation('relu'))
+model.add(Convolution2D(128, 3, 3, border_mode='same', activation = 'relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
 model.add(Flatten())
 model.add(Dropout(0.5))
-model.add(Dense(96))
-model.add(Activation('relu'))
-model.add(Dense(5))
-model.add(Activation('relu'))
-model.add(Dense(nb_classes))
-model.add(Activation('softmax'))
+model.add(Dense(96,activation='relu'))
+model.add(Dense(nb_classes,activation='softmax'))
 
 # let's train the model using SGD + momentum (how original).
 sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)  #lr=0.005
@@ -207,16 +205,16 @@ else:
 
     # this will do preprocessing and realtime data augmentation
     datagen = ImageDataGenerator(
-        featurewise_center=False,  # set input mean to 0 over the dataset
+        featurewise_center=True,  # set input mean to 0 over the dataset
         samplewise_center=False,  # set each sample mean to 0
-        featurewise_std_normalization=False,  # divide inputs by std of the dataset
+        featurewise_std_normalization=True,  # divide inputs by std of the dataset
         samplewise_std_normalization=False,  # divide each input by its std
         zca_whitening=False,  # apply ZCA whitening
         rotation_range=0,  # randomly rotate images in the range (degrees, 0 to 180)
-        width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
-        height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
-        horizontal_flip=True,  # randomly flip images
-        vertical_flip=True)  # randomly flip images
+        width_shift_range=0,  # randomly shift images horizontally (fraction of total width)
+        height_shift_range=0,  # randomly shift images vertically (fraction of total height)
+        horizontal_flip=False,  # randomly flip images
+        vertical_flip=False)  # randomly flip images
 
     # compute quantities required for featurewise normalization
     # (std, mean, and principal components if ZCA whitening is applied)
