@@ -1,4 +1,4 @@
-import numpy, glob, cv2, csv
+import numpy, glob, cv2, csv, sys
 import os    
 os.environ['THEANO_FLAGS'] = "device=gpu0,floatX=float32"
 
@@ -19,16 +19,24 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
-batch_size = 100#128   #10
+lr = 0.005
+
+batch_size = 50#128   #10
 nb_classes = 2    #5
-nb_epoch = 1#400   #250
+nb_epoch = 400#400   #250
 data_augmentation = False#True
 
-#left 17561
-#rigth 17562
-nb_samples=200 #35123  #20
-nb_train_samples=100#28000 #10
-nb_test_samples=100 #7123  #10
+side = "left"#right
+etiquetas = 17562 #numleft = 17562 #numrigth = 17562
+nb_train_samples=50
+nb_test_samples=50
+nb_samples=nb_train_samples + nb_test_samples
+same=1
+
+#Data por clases
+data_per_classes =1
+num_zero_class= nb_train_samples/2
+num_one_class = nb_train_samples/2
 
 # input image dimensions
 img_rows, img_cols = 256, 256
@@ -36,26 +44,60 @@ img_rows, img_cols = 256, 256
 img_channels = 3
 
 X_data = numpy.zeros((nb_samples, img_channels, img_rows, img_cols), dtype="uint8")
-Y_label = numpy.zeros((nb_samples,), dtype="uint8")
+Y_label = numpy.zeros((etiquetas,), dtype="uint8")
 aux = []
 
 ##############LOADIN DATA##########################################################
 print "-----------------------------"
 print "Loading dataset..."
+
+# Loading .csv -> etiquetas
 j=0
-with open('/home/ubuntu-ssd/Documents/INIFIM/classification/data/trainLabels-DL.csv', 'rb') as csvfile:
+if side == "left":
+  ruta_csv = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/trainLabels-DL.csv'
+elif side == "right":
+  ruta_csv = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/trainLabels-DR.csv'
+with open(ruta_csv, 'rb') as csvfile:
      trainlabels = csv.reader(csvfile, delimiter=',')
      for row in trainlabels:
       Y_label[j,] = numpy.uint8(row[1])
       aux.append(numpy.str(row[0]))
       j=j+1
-      if j==nb_samples:
-        break
+      #if j==nb_samples:
+      #  break
 
+aux = numpy.asarray(aux)
+# binary labels (sano: 0 , enfermo: 1)
+Y_label_aux = Y_label>0
+Y_label = numpy.uint8(Y_label_aux)
+
+
+if data_per_classes ==1:
+  if num_zero_class+num_one_class==nb_train_samples:
+    var = numpy.asarray([aux,Y_label])
+    var = var.T
+    data_0 = var[Y_label==0]
+    data_1 = var[Y_label>0]
+    numpy.random.shuffle(data_0)
+    numpy.random.shuffle(data_1)
+    data_t_0 = data_0[0:num_zero_class]
+    data_t_1 = data_1[0:num_one_class]
+    data_te_0 = data_0[num_zero_class:(num_zero_class+(nb_test_samples/2))]
+    data_te_1 = data_1[num_one_class:(num_one_class+(nb_test_samples/2))]
+    data = numpy.concatenate((data_t_0,data_t_1,data_te_0,data_te_1),axis=0)
+    aux = data[:,0]
+    Y_label = numpy.uint8(data[:,1])
+  else:
+    sys.exit("Error - (num_zero_class + num_one_class) diferente de nb_train_samples -- Line 35")
+
+if img_rows == 256:
+  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/256x256/256x256__'
+elif img_rows == 512:
+  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/512x512/512x512__'
 i=0
-for f in aux: #sorted(glob.glob("/home/ubuntu-ssd/Documents/INIFIM/classification/data/256x256/*.jpeg")):
-  filename = "256x256__"+f+'.jpeg'
-  ruta = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/256x256/'+filename
+for f in aux: 
+  filename = f+'.jpeg'
+  ruta = ruta_img+filename
   img=cv2.imread(ruta) 
   img=img.transpose(2, 0, 1)
   img = img.reshape((1,) + img.shape)
@@ -66,18 +108,17 @@ for f in aux: #sorted(glob.glob("/home/ubuntu-ssd/Documents/INIFIM/classificatio
   if i==nb_samples:
   	break
 
-# binary labels (sano: 0 , enfermo: 1)
-Y_label_aux = Y_label>0
-Y_label = numpy.uint8(Y_label_aux)
 print "-----------------------------"
 print "Split Data..."
 X_train = X_data[0:nb_train_samples]
 Y_train = Y_label[0:nb_train_samples]
 
-X_test = X_train
-Y_test = Y_train
-#X_test = X_data[nb_train_samples:nb_samples]
-#Y_test = Y_label[nb_train_samples:nb_samples]
+if same==1:
+  X_test = X_train
+  Y_test = Y_train
+else:
+  X_test = X_data[nb_train_samples:nb_samples]
+  Y_test = Y_label[nb_train_samples:nb_samples]
 
 print('X_train shape:', X_train.shape)
 print(X_train.shape[0], 'train samples')
@@ -135,7 +176,7 @@ model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
 
 # let's train the model using SGD + momentum (how original).
-sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)  #lr=0.005
+sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)  #lr=0.005
 model.compile(loss='categorical_crossentropy',
               optimizer=sgd,
               metrics=['accuracy'])
@@ -261,7 +302,6 @@ scores = loaded_model.evaluate(X_test, Y_test, verbose=0)
 print("Accuracy loaded model: %.2f%%" % (scores[1]*100))
 ##########################################################################################
 prediction = model.predict_classes(X_test)
-print prediction
 
 pyplot.figure(figsize=(19,12),dpi=100)
 pyplot.suptitle("Ground truth and prediction - 0->Ok , 1->RD ")
@@ -286,6 +326,9 @@ for k in range(nb_test_samples):
 
 pyplot.savefig('prediction.png')
 pyplot.show()
+
+
+
 #print prediction
 '''
 aux_train = aux[0:nb_train_samples]
