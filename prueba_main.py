@@ -3,12 +3,10 @@ import os
 os.environ['THEANO_FLAGS'] = "device=gpu0,floatX=float32"
 
 # fix random seed for reproducibility
-seed = 7
-numpy.random.seed(seed)
+numpy.random.seed(1337)
 
-from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Dense, Dropout, Activation, Flatten, BatchNormalization
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD
 from keras.utils import np_utils
@@ -19,22 +17,29 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
-lr = 0.001
+lr = 0.01
 
 batch_size = 128#128   #10
 nb_classes = 2    #5
-nb_epoch = 400#400   #25
-data_augmentation = True#True
+nb_epoch = 10#400   #25
+data_augmentation = True #Ver seccin de data augmentation para activar opciones (line 206 aprox)
 
-side = "left"#right
-etiquetas = 17562 #numleft = 17562 #numrigth = 17562
+side = "left" #right
+etiquetas = 17562 #numleft = 17562 #numrigth = 17562        <------> labels
 nb_train_samples=4000*2
-nb_test_samples=691*2
+nb_test_samples=692*2
 nb_samples=nb_train_samples + nb_test_samples
-same=0
+same=0 #Flag Xtrain = Xtest   otherwise 0 =->Xtrain and test different
 
-#Data por clases
-data_per_classes =1
+#Data por clases   ----> 
+'''
+left (de 1 a 2.74)
+0: 12870  1: 4692
+
+Right (de 1 a 2.79)
+0: 12938  1:4624
+'''
+data_per_classes =1 #flag activar distribcion 50/50
 num_zero_class= nb_train_samples/2
 num_one_class = nb_train_samples/2
 
@@ -46,15 +51,6 @@ img_channels = 3
 X_data = numpy.zeros((nb_samples, img_channels, img_rows, img_cols), dtype="uint8")
 Y_label = numpy.zeros((etiquetas,), dtype="uint8")
 
-'''
-left (de 1 a 2.74)
-0: 12870
-1: 4691
-
-Right (de 1 a 2.79)
-0: 12938
-1:4624
-'''
 ##############LOADIN DATA##########################################################
 print "-----------------------------"
 print "Loading dataset..."
@@ -72,8 +68,6 @@ with open(ruta_csv, 'rb') as csvfile:
       Y_label[j,] = numpy.uint8(row[1])
       aux.append(numpy.str(row[0]))
       j=j+1
-      #if j==nb_samples:
-      #  break
 
 aux = numpy.asarray(aux)
 # binary labels (sano: 0 , enfermo: 1)
@@ -94,10 +88,11 @@ if data_per_classes ==1:
     data_te_0 = data_0[num_zero_class:(num_zero_class+(nb_test_samples/2))]
     data_te_1 = data_1[num_one_class:(num_one_class+(nb_test_samples/2))]
     data = numpy.concatenate((data_t_0,data_t_1,data_te_0,data_te_1),axis=0)
-    aux = data[:,0]
-    Y_label = numpy.uint8(data[:,1])
+    #numpy.random.shuffle(data)                          # desordenar data
+    aux = data[:,0]                                 # Nombre de la imagen
+    Y_label = numpy.uint8(data[:,1])                      # etiquetas
   else:
-    sys.exit("Error - (num_zero_class + num_one_class) diferente de nb_train_samples -- Line 35")
+    sys.exit("Error - (num_zero_class + num_one_class) diferente de nb_train_samples -- Line 35 - 47")
 
 if img_rows == 256:
   ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/256x256/256x256__'
@@ -107,15 +102,15 @@ i=0
 for f in aux: 
   filename = f+'.jpeg'
   ruta = ruta_img+filename
-  img=cv2.imread(ruta) 
-  img=img.transpose(2, 0, 1)
-  img = img.reshape((1,) + img.shape)
+  img=cv2.imread(ruta)                # --> (row,column,channel)
+  img=img.transpose(2, 0, 1)            # --> (channel, row, column)
+  img = img.reshape((1,) + img.shape)       # --> (#sample, channel, row, column)
   if i%100==0 :
     print i+1,") ",'\t', f, '\t', Y_label[i]
   X_data[i,:,:,:] = img
   i= i +1
   if i==nb_samples:
-  	break
+    break
 
 print "-----------------------------"
 print "Split Data..."
@@ -142,39 +137,61 @@ print "-----------------------------"
 Y_train = np_utils.to_categorical(Y_train, nb_classes=nb_classes)
 Y_test = np_utils.to_categorical(Y_test,nb_classes=nb_classes) 
 
-print X_train.shape[1:]
-print Y_train.shape
+print 'Image Sample format: ',X_train.shape[1:]
+print 'Label Sample categorical format:' , Y_train.shape[1:]
 
+print '------------------------------'
+print 'Compile model...'
 model = Sequential()
 
-model.add(Convolution2D(16, 3, 3, border_mode='same', input_shape=X_train.shape[1:], activation = 'relu'))
-model.add(Convolution2D(16, 3, 3, border_mode='same', activation = 'relu'))
+model.add(Convolution2D(8, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Convolution2D(8, 3, 3,border_mode='same'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
   
-model.add(Convolution2D(32, 3, 3, border_mode='same', activation = 'relu'))
-model.add(Convolution2D(32, 3, 3, border_mode='same', activation = 'relu'))
+model.add(Convolution2D(16, 3, 3, border_mode='same'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Convolution2D(16, 3, 3,border_mode='same'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
-model.add(Convolution2D(64, 3, 3, border_mode='same', activation = 'relu'))
-model.add(Convolution2D(64, 3, 3, border_mode='same', activation = 'relu'))
+model.add(Convolution2D(32, 3, 3, border_mode='same'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(Convolution2D(32, 3, 3,border_mode='same'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
-model.add(Convolution2D(96, 3, 3, border_mode='same', activation = 'relu'))
+model.add(Convolution2D(48, 3, 3,border_mode='same'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
-model.add(Convolution2D(96, 3, 3, border_mode='same', activation = 'relu'))
+model.add(Convolution2D(48, 3, 3,border_mode='same'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
-model.add(Convolution2D(128, 3, 3, border_mode='same', activation = 'relu'))
+model.add(Convolution2D(64, 3, 3,border_mode='same'))
+model.add(BatchNormalization())
+model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
 model.add(Flatten())
 model.add(Dropout(0.5))
-model.add(Dense(96,activation='relu'))
-model.add(Dense(nb_classes,activation='softmax'))
+model.add(Dense(48))
+model.add(Activation('relu'))
+model.add(Dense(nb_classes))
+model.add(Activation('softmax'))
 
 # let's train the model using SGD + momentum (how original).
-sgd = SGD(lr=lr, decay=1e-6, momentum=0.9, nesterov=True)  #lr=0.005
+sgd = SGD(lr=lr, decay=0, momentum=0.9, nesterov=True)  #lr=0.005 #decay=1e-6
 model.compile(loss='categorical_crossentropy',
               optimizer=sgd,
               metrics=['accuracy'])
@@ -183,10 +200,11 @@ print(model.summary())
 
 print 'Float transformation...'
 '''
-for n in range(0,4):
-  X_train[7000*n:7000*(n+1)] = X_train[7000*n:7000*(n+1)].astype('float32')
-  print (n+1)*7000 , 'OK'
+  for n in range(0,8):
+    X_train[1000*n:1000*(n+1)] = X_train[1000*n:1000*(n+1)].astype('float32')
+    print (n+1)*1000 , 'OK'
 '''
+
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 X_train /= 255
@@ -210,6 +228,7 @@ else:
         featurewise_std_normalization=True,  # divide inputs by std of the dataset
         samplewise_std_normalization=False,  # divide each input by its std
         zca_whitening=False,  # apply ZCA whitening
+        #zoom_range = [0.8, 1], #Zoom random crops
         rotation_range=0,  # randomly rotate images in the range (degrees, 0 to 180)
         width_shift_range=0,  # randomly shift images horizontally (fraction of total width)
         height_shift_range=0,  # randomly shift images vertically (fraction of total height)
@@ -222,7 +241,7 @@ else:
 
     # fit the model on the batches generated by datagen.flow()
     hist = model.fit_generator(datagen.flow(X_train, Y_train,
-                        batch_size=batch_size),
+                        batch_size=batch_size, shuffle=True),
                         samples_per_epoch=X_train.shape[0],
                         nb_epoch=nb_epoch,
                         validation_data=(X_test, Y_test))
@@ -323,7 +342,7 @@ for k in range(nb_test_samples):
 
 
 pyplot.savefig('prediction.png')
-pyplot.show()
+#pyplot.show()
 
 
 
