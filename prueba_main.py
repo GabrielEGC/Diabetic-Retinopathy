@@ -17,7 +17,7 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
-lr = 0.01
+lr = 0.05
 
 batch_size = 128#128   #10
 nb_classes = 2    #5
