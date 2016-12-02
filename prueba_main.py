@@ -9,6 +9,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten, BatchNormalization
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD
+from keras.constraints import maxnorm
 from keras.utils import np_utils
 from matplotlib import pyplot
 from scipy.misc import toimage
@@ -22,12 +23,12 @@ lr = 0.05
 batch_size = 128#128   #10
 nb_classes = 2    #5
 nb_epoch = 400#400   #25
-data_augmentation = True #Ver seccin de data augmentation para activar opciones (line 206 aprox)
+data_augmentation = False #Ver seccin de data augmentation para activar opciones (line 206 aprox)
 
 side = "left" #right
 etiquetas = 17562 #numleft = 17562 #numrigth = 17562        <------> labels
-nb_train_samples=4000*2
-nb_test_samples=692*2
+nb_train_samples= 4000*2#15000#4000*2
+nb_test_samples= 692*2#2562#692*2
 nb_samples=nb_train_samples + nb_test_samples
 same=0 #Flag Xtrain = Xtest   otherwise 0 =->Xtrain and test different
 
@@ -59,9 +60,9 @@ print "Loading dataset..."
 aux = []
 j=0
 if side == "left":
-  ruta_csv = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/trainLabels-DL.csv'
+  ruta_csv = '/home/ubuntu-ssd/Documents/INIFIM/Data/preprocesada/trainLabels-DL.csv'
 elif side == "right":
-  ruta_csv = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/trainLabels-DR.csv'
+  ruta_csv = '/home/ubuntu-ssd/Documents/INIFIM/Data/preprocesada/trainLabels-DR.csv'
 with open(ruta_csv, 'rb') as csvfile:
      trainlabels = csv.reader(csvfile, delimiter=',')
      for row in trainlabels:
@@ -79,6 +80,7 @@ if data_per_classes ==1:
   if num_zero_class+num_one_class==nb_train_samples:
     var = numpy.asarray([aux,Y_label])
     var = var.T
+    #numpy.random.shuffle(var)
     data_0 = var[Y_label==0]
     data_1 = var[Y_label>0]
     #numpy.random.shuffle(data_0)
@@ -95,14 +97,16 @@ if data_per_classes ==1:
     sys.exit("Error - (num_zero_class + num_one_class) diferente de nb_train_samples -- Line 35 - 47")
 
 if img_rows == 256:
-  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/256x256/256x256__'
+  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/Data/preprocesada/deep_sense_io/256x256/256x256__'
 elif img_rows == 512:
-  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/classification/data/512x512/512x512__'
+  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/Data/preprocesada/deep_sense_io/512x512/512x512__'
 i=0
 for f in aux: 
   filename = f+'.jpeg'
   ruta = ruta_img+filename
   img=cv2.imread(ruta)                # --> (row,column,channel)
+  b,g,r = cv2.split(img)
+  img= cv2.merge((r, g, b))
   img=img.transpose(2, 0, 1)            # --> (channel, row, column)
   img = img.reshape((1,) + img.shape)       # --> (#sample, channel, row, column)
   if i%100==0 :
@@ -187,11 +191,15 @@ model.add(Flatten())
 model.add(Dropout(0.5))
 model.add(Dense(48))
 model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(24))
+model.add(Activation('relu'))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
 
+decay = lr/nb_epoch
 # let's train the model using SGD + momentum (how original).
-sgd = SGD(lr=lr, decay=0, momentum=0.9, nesterov=True)  #lr=0.005 #decay=1e-6
+sgd = SGD(lr=lr, decay=decay, momentum=0.9, nesterov=True)  #lr=0.005 #decay=1e-6
 model.compile(loss='categorical_crossentropy',
               optimizer=sgd,
               metrics=['accuracy'])
@@ -199,17 +207,21 @@ print(model.summary())
 # Pasando X a float para hacer operaciones 
 
 print 'Float transformation...'
+#miles = nb_train_samples/1000
 '''
-  for n in range(0,8):
-    X_train[1000*n:1000*(n+1)] = X_train[1000*n:1000*(n+1)].astype('float32')
-    print (n+1)*1000 , 'OK'
+for n in range(0,miles):
+	X_train[1000*n:1000*(n+1)] = X_train[1000*n:1000*(n+1)].astype('float32')
+	print (n+1)*1000 , 'OK'
 '''
-
+print '---------------------'
+print X_train[1,:,120:124,120:124]
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 X_train /= 255
 X_test /= 255
-
+print '---------------------'
+print X_train[1,:,120:124,120:124]
+print '---------------------'
 print 'Training...'
 if not data_augmentation:
     print('Not using data augmentation.')
