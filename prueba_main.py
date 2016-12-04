@@ -18,7 +18,7 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras import backend as K
 K.set_image_dim_ordering('th')
 
-lr = 0.05
+lr = 0.01
 
 batch_size = 128#128   #10
 nb_classes = 2    #5
@@ -97,9 +97,9 @@ if data_per_classes ==1:
     sys.exit("Error - (num_zero_class + num_one_class) diferente de nb_train_samples -- Line 35 - 47")
 
 if img_rows == 256:
-  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/Data/preprocesada/deep_sense_io/256x256/256x256__'
+  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/Data/preprocesada/substract_local_mean_color/256x256/256x256__'
 elif img_rows == 512:
-  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/Data/preprocesada/deep_sense_io/512x512/512x512__'
+  ruta_img = '/home/ubuntu-ssd/Documents/INIFIM/Data/preprocesada/substract_local_mean_color/512x512/512x512__'
 i=0
 for f in aux: 
   filename = f+'.jpeg'
@@ -148,58 +148,55 @@ print '------------------------------'
 print 'Compile model...'
 model = Sequential()
 
-model.add(Convolution2D(8, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
-model.add(BatchNormalization())
+model.add(Convolution2D(16, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
+#model.add(BatchNormalization())
 model.add(Activation('relu'))
-model.add(Convolution2D(8, 3, 3,border_mode='same'))
-model.add(BatchNormalization())
+model.add(Convolution2D(16, 3, 3,border_mode='same'))
+#model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
   
-model.add(Convolution2D(16, 3, 3, border_mode='same'))
-model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(Convolution2D(16, 3, 3,border_mode='same'))
-model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-
 model.add(Convolution2D(32, 3, 3, border_mode='same'))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(Convolution2D(32, 3, 3,border_mode='same'))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
-model.add(Convolution2D(48, 3, 3,border_mode='same'))
-model.add(BatchNormalization())
+model.add(Convolution2D(64, 3, 3, border_mode='same'))
+#model.add(BatchNormalization())
 model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-
-model.add(Convolution2D(48, 3, 3,border_mode='same'))
-model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-
 model.add(Convolution2D(64, 3, 3,border_mode='same'))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+
+model.add(Convolution2D(96, 3, 3,border_mode='same'))
+#model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+
+model.add(Convolution2D(96, 3, 3,border_mode='same'))
+#model.add(BatchNormalization())
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+
+model.add(Convolution2D(128, 3, 3,border_mode='same'))
+#model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
 model.add(Flatten())
 model.add(Dropout(0.5))
-model.add(Dense(48))
-model.add(Activation('relu'))
-model.add(Dropout(0.5))
-model.add(Dense(24))
+model.add(Dense(96))
 model.add(Activation('relu'))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
 
 decay = lr/nb_epoch
 # let's train the model using SGD + momentum (how original).
-sgd = SGD(lr=lr, decay=decay, momentum=0.9, nesterov=True)  #lr=0.005 #decay=1e-6
+sgd = SGD(lr=lr, decay=0, momentum=0.9, nesterov=True)  #lr=0.005 #decay=1e-6
 model.compile(loss='categorical_crossentropy',
               optimizer=sgd,
               metrics=['accuracy'])
@@ -258,6 +255,9 @@ else:
                         nb_epoch=nb_epoch,
                         validation_data=(X_test, Y_test))
 
+scores = model.evaluate(X_test, Y_test, verbose=0)
+print("Accuracy model: %.2f%%" % (scores[1]*100))
+
 train_acc = numpy.asarray(hist.history['acc'])
 train_loss = numpy.asarray(hist.history['loss'])
 test_acc = numpy.asarray(hist.history['val_acc'])
@@ -298,9 +298,6 @@ pyplot.savefig('graficas.png')
 
 pyplot.show()
 
-
-scores = model.evaluate(X_test, Y_test, verbose=0)
-print("Accuracy model: %.2f%%" % (scores[1]*100))
 
 ###########################################################################################
 # saving model
@@ -357,7 +354,10 @@ pyplot.savefig('prediction.png')
 #pyplot.show()
 
 
-
+#num_img=5
+#pyplot.figure()
+#pyplot.imshow(toimage(X_test[num_img-1]))
+#pyplot.show()
 #print prediction
 '''
 aux_train = aux[0:nb_train_samples]
