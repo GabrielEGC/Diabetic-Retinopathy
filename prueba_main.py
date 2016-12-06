@@ -152,12 +152,12 @@ print 'Label Sample categorical format:' , Y_train.shape[1:]
 print '------------------------------'
 print 'Compile model...'
 model = Sequential()
-
+'''
 model.add(Convolution2D(16, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
-
-model.add(Convolution2D(16, 3, 3,border_mode='same'))
+'''
+model.add(Convolution2D(16, 3, 3,border_mode='same',input_shape=X_train.shape[1:]))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
@@ -279,8 +279,13 @@ epocas = []
 for i in range(nb_epoch):
   epocas.append(i)
 
+numpy.save('hist/train_acc.npy',train_acc)
+numpy.save('hist/train_loss.npy',train_loss)
+numpy.save('hist/test_acc.npy',test_acc)
+numpy.save('hist/test_loss.npy',test_loss)
+
 pyplot.figure(figsize=(19,12),dpi=100)
-pyplot.suptitle('Train: '+str(nb_train_samples) + '\t' + 'Test: '+str(nb_test_samples), fontsize="x-large")
+pyplot.suptitle('lr'+'='+str(lr)+'Train: '+str(nb_train_samples) + '  ' + 'Test: '+str(nb_test_samples), fontsize="x-large")
 
 pyplot.subplot(2,2,1)
 pyplot.xlabel('Epoch')
@@ -288,25 +293,30 @@ pyplot.ylabel('accuracy')
 pyplot.axis([-5, nb_epoch*1.05, 0, 1.1])
 pyplot.title('Train acc')
 pyplot.plot(epocas,train_acc)
+pyplot.grid()
 
 pyplot.subplot(2,2,3)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('loss')
 pyplot.title('Train loss')
 pyplot.plot(epocas,train_loss)
+pyplot.grid()
 
 pyplot.subplot(2,2,2)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('accuracy')
 pyplot.axis([-5, nb_epoch*1.1, 0, 1.1])
 pyplot.title('Test acc')
-
 pyplot.plot(epocas,test_acc)
+pyplot.grid()
+
 pyplot.subplot(2,2,4)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('loss')
 pyplot.title('Test loss')
 pyplot.plot(epocas,test_loss)
+pyplot.grid()
+
 pyplot.savefig('graficas.png')
 
 pyplot.show()
