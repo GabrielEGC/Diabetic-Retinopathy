@@ -20,8 +20,9 @@ from keras.regularizers import l2, activity_l2
 from keras.callbacks import ModelCheckpoint
 K.set_image_dim_ordering('th')
 
-lr = 0.02 #0.01
-
+lr = 0.015 # 0.03 decay 1e-4
+#lr = 0.01 # decay 
+ 
 batch_size = 128#128   #10
 nb_classes = 2    #5
 nb_epoch = 100 #200#400   #25
@@ -200,7 +201,7 @@ model.add(Activation('relu'))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
 
-decay = lr/nb_epoch
+decay = 1e-4
 # let's train the model using SGD + momentum (how original).
 sgd = SGD(lr=lr, decay=0, momentum=0.9, nesterov=True)  #lr=0.005 #decay=1e-6
 model.compile(loss='categorical_crossentropy',
@@ -268,6 +269,10 @@ else:
                         nb_epoch=nb_epoch,
                         validation_data=(X_test, Y_test),callbacks=callbacks_list)
 
+opt = model.optimizer
+exact_lr = opt.lr.get_value() * (1.0 / (1.0 + opt.decay.get_value() * opt.iterations.get_value()))
+print exact_lr
+
 scores = model.evaluate(X_test, Y_test, verbose=0)
 print("Accuracy model: %.2f%%" % (scores[1]*100))
 
@@ -285,7 +290,7 @@ numpy.save('hist/test_acc.npy',test_acc)
 numpy.save('hist/test_loss.npy',test_loss)
 
 pyplot.figure(figsize=(19,12),dpi=100)
-pyplot.suptitle('lr'+'='+str(lr)+'Train: '+str(nb_train_samples) + '  ' + 'Test: '+str(nb_test_samples), fontsize="x-large")
+pyplot.suptitle('lr ='+str(lr)+ ' Decay='+str(decay)+' Train: '+str(nb_train_samples) + '  ' + 'Test: '+str(nb_test_samples), fontsize="x-large")
 
 pyplot.subplot(2,2,1)
 pyplot.xlabel('Epoch')
@@ -382,31 +387,30 @@ pyplot.savefig('prediction.png')
 #pyplot.imshow(toimage(X_test[num_img-1]))
 #pyplot.show()
 #print prediction
-'''
-aux_train = aux[0:nb_train_samples]
-aux_test = aux[nb_train_samples:nb_samples]
-#aux_test = aux_train
 
-num_img=5
-# probando con una imagen
-pyplot.figure('Test - one image')
-pyplot.imshow(toimage(X_test[num_img-1]))
-pyplot.title(aux_test[num_img-1])
-pyplot.show()
-print 'label:', Y_test[num_img-1]
-x = numpy.expand_dims(X_test[num_img-1], axis=0)
-prediction = model.predict(x)
-print 'prediction:', numpy.round(prediction)
-'''
+#aux_train = aux[0:nb_train_samples]
+#aux_test = aux[nb_train_samples:nb_samples]
+##aux_test = aux_train
 
-'''
-print "-----------------------------"
-print "Normalization: Zero Mean , standard deviation 1 , min-max 0-1"
+#num_img=5
+## probando con una imagen
+#pyplot.figure('Test - one image')
+#pyplot.imshow(toimage(X_test[num_img-1]))
+#pyplot.title(aux_test[num_img-1])
+#pyplot.show()
+#print 'label:', Y_test[num_img-1]
+#x = numpy.expand_dims(X_test[num_img-1], axis=0)
+#prediction = model.predict(x)
+#print 'prediction:', numpy.round(prediction)
 
-mean_train = X_train.mean(0)
-deviation = X_train.std(0)
-X_train=(X_train - mean_train)/deviation
-X_train = ( X_train - X_train.min(0) )/(X_train.max(0)-X_train.min(0))
 
-print "-----------------------------"
-'''
+#print "-----------------------------"
+#print "Normalization: Zero Mean , standard deviation 1 , min-max 0-1"
+
+#mean_train = X_train.mean(0)
+#deviation = X_train.std(0)
+#X_train=(X_train - mean_train)/deviation
+#X_train = ( X_train - X_train.min(0) )/(X_train.max(0)-X_train.min(0))
+
+#print "-----------------------------"
+
