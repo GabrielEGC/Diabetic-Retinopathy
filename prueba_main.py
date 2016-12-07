@@ -20,7 +20,7 @@ from keras.regularizers import l2, activity_l2
 from keras.callbacks import ModelCheckpoint
 K.set_image_dim_ordering('th')
 
-lr = 0.03 #0.01
+lr = 0.02 #0.01
 
 batch_size = 128#128   #10
 nb_classes = 2    #5
