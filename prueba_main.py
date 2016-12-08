@@ -20,8 +20,8 @@ from keras.regularizers import l2, activity_l2
 from keras.callbacks import ModelCheckpoint
 K.set_image_dim_ordering('th')
 
-lr = 0.015 # 0.03 decay 1e-4
-#lr = 0.01 # decay 
+lr = 0.02 
+# 0.03 decay 1e-4
  
 batch_size = 128#128   #10
 nb_classes = 2    #5
@@ -201,9 +201,9 @@ model.add(Activation('relu'))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
 
-decay = 1e-4
+decay = 7*1e-5
 # let's train the model using SGD + momentum (how original).
-sgd = SGD(lr=lr, decay=0, momentum=0.9, nesterov=True)  #lr=0.005 #decay=1e-6
+sgd = SGD(lr=lr, decay=decay, momentum=0.9, nesterov=True)  #lr=0.005 #decay=1e-6
 model.compile(loss='categorical_crossentropy',
               optimizer=sgd,
               metrics=['accuracy'])
@@ -295,7 +295,7 @@ pyplot.suptitle('lr ='+str(lr)+ ' Decay='+str(decay)+' Train: '+str(nb_train_sam
 pyplot.subplot(2,2,1)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('accuracy')
-pyplot.axis([-5, nb_epoch*1.05, 0, 1.1])
+pyplot.axis([-1, nb_epoch*1.01, 0.4, 1.1])
 pyplot.title('Train acc')
 pyplot.plot(epocas,train_acc)
 pyplot.grid()
@@ -303,6 +303,7 @@ pyplot.grid()
 pyplot.subplot(2,2,3)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('loss')
+pyplot.axis([-1, nb_epoch*1.01, 0, 0.8])
 pyplot.title('Train loss')
 pyplot.plot(epocas,train_loss)
 pyplot.grid()
@@ -310,7 +311,7 @@ pyplot.grid()
 pyplot.subplot(2,2,2)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('accuracy')
-pyplot.axis([-5, nb_epoch*1.1, 0, 1.1])
+pyplot.axis([-1, nb_epoch*1.01, 0.4, 1.1])
 pyplot.title('Test acc')
 pyplot.plot(epocas,test_acc)
 pyplot.grid()
@@ -318,6 +319,7 @@ pyplot.grid()
 pyplot.subplot(2,2,4)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('loss')
+pyplot.axis([-1, nb_epoch*1.01, 0, 0.8])
 pyplot.title('Test loss')
 pyplot.plot(epocas,test_loss)
 pyplot.grid()
