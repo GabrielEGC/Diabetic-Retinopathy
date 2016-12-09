@@ -20,7 +20,7 @@ from keras.regularizers import l2, activity_l2
 from keras.callbacks import ModelCheckpoint
 K.set_image_dim_ordering('th')
 
-lr = 0.05 #PRIMER RESULTADO DECENTE
+lr = 0.01 #PRIMER RESULTADO DECENTE
 # 0.03 decay 1e-4
  
 batch_size = 128#128   #10
@@ -30,8 +30,8 @@ data_augmentation = True #Ver seccin de data augmentation para activar opciones 
 
 side = "left" #right
 etiquetas = 17562 #numleft = 17562 #numrigth = 17562        <------> labels
-nb_train_samples= 15000#4000*2
-nb_test_samples= 2562#692*2
+nb_train_samples= 4000*2 #15000
+nb_test_samples= 692*2 #2562
 nb_samples=nb_train_samples + nb_test_samples
 same=0 #Flag Xtrain = Xtest   otherwise 0 =->Xtrain and test different
 
@@ -43,7 +43,7 @@ left (de 1 a 2.74)
 Right (de 1 a 2.79)
 0: 12938  1:4624
 '''
-data_per_classes =0 #flag activar distribcion 50/50
+data_per_classes =1 #flag activar distribcion 50/50
 num_zero_class= nb_train_samples/2
 num_one_class = nb_train_samples/2
 
