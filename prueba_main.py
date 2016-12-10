@@ -20,12 +20,12 @@ from keras.regularizers import l2, activity_l2
 from keras.callbacks import ModelCheckpoint
 K.set_image_dim_ordering('th')
 
-lr = 0.05 #PRIMER RESULTADO DECENTE
+lr = 0.01 #PRIMER RESULTADO DECENTE
 # 0.03 decay 1e-4
  
 batch_size = 128#128   #10
 nb_classes = 2    #5
-nb_epoch = 100 #200#400   #25
+nb_epoch = 50 #200#400   #25
 data_augmentation = True #Ver seccin de data augmentation para activar opciones (line 206 aprox)
 
 side = "left" #right
@@ -200,6 +200,8 @@ model.add(Dense(96)) #W_regularizer=l2(0.00005), activity_regularizer=activity_l
 model.add(Activation('relu'))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
+
+model.load_weights('model.h5')
 
 decay = 0# 7*1e-5
 # let's train the model using SGD + momentum (how original).
