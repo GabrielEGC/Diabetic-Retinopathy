@@ -188,12 +188,12 @@ model.add(Convolution2D(96, 3, 3,border_mode='same'))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-
+'''
 model.add(Convolution2D(128, 3, 3,border_mode='same'))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-
+'''
 model.add(Flatten())
 model.add(Dropout(0.3))
 model.add(Dense(96)) #W_regularizer=l2(0.00005), activity_regularizer=activity_l2(0.00005)
@@ -313,7 +313,8 @@ pyplot.savefig('graficas.png')
 
 pyplot.show()
 
-
+print 'Max Test Acc: ', max(test_acc)
+print 'Min Test Loss: ', min(test_loss)
 ###########################################################################################
 # saving model
 model_json = model.to_json()
