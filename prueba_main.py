@@ -25,13 +25,13 @@ lr = 0.01 #PRIMER RESULTADO DECENTE
  
 batch_size = 128#128   #10
 nb_classes = 2    #5
-nb_epoch = 50 #200#400   #25
+nb_epoch = 100 #200#400   #25
 data_augmentation = True #Ver seccin de data augmentation para activar opciones (line 206 aprox)
 
 side = "left" #right
 etiquetas = 17562 #numleft = 17562 #numrigth = 17562        <------> labels
-nb_train_samples= 15000#4000*2 #
-nb_test_samples= 2562#692*2 #
+nb_train_samples= 15000#4000*2 #15000
+nb_test_samples= 2562#692*2 #2562
 nb_samples=nb_train_samples + nb_test_samples
 same=0 #Flag Xtrain = Xtest   otherwise 0 =->Xtrain and test different
 
@@ -195,13 +195,13 @@ model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
 
 model.add(Flatten())
-model.add(Dropout(0.5))
+model.add(Dropout(0.3))
 model.add(Dense(96)) #W_regularizer=l2(0.00005), activity_regularizer=activity_l2(0.00005)
 model.add(Activation('relu'))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
 
-model.load_weights('model.h5')
+#model.load_weights('model.h5')
 
 decay = 0# 7*1e-5
 # let's train the model using SGD + momentum (how original).
