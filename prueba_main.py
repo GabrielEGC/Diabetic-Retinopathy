@@ -157,11 +157,11 @@ model = Sequential()
 model.add(Convolution2D(16, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
-
 model.add(Convolution2D(16, 3, 3,border_mode='same'))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+model.add(Dropout(0.1))
   
 model.add(Convolution2D(32, 3, 3, border_mode='same'))
 #model.add(BatchNormalization())
@@ -170,6 +170,7 @@ model.add(Convolution2D(32, 3, 3,border_mode='same'))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+model.add(Dropout(0.1))
 
 model.add(Convolution2D(64, 3, 3, border_mode='same'))
 #model.add(BatchNormalization())
@@ -178,22 +179,25 @@ model.add(Convolution2D(64, 3, 3,border_mode='same'))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+model.add(Dropout(0.1))
 
 model.add(Convolution2D(96, 3, 3,border_mode='same'))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+model.add(Dropout(0.1))
 
 model.add(Convolution2D(96, 3, 3,border_mode='same'))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-'''
+model.add(Dropout(0.1))
+
 model.add(Convolution2D(128, 3, 3,border_mode='same'))
 #model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-'''
+
 model.add(Flatten())
 model.add(Dropout(0.3))
 model.add(Dense(96)) #W_regularizer=l2(0.00005), activity_regularizer=activity_l2(0.00005)
