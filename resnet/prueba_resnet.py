@@ -5,33 +5,34 @@ os.environ['THEANO_FLAGS'] = "device=gpu0,floatX=float32"
 # fix random seed for reproducibility
 numpy.random.seed(1337)
 
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten, BatchNormalization
-from keras.layers import Convolution2D, MaxPooling2D
+from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.optimizers import SGD
-from keras.constraints import maxnorm
 from keras.utils import np_utils
 from matplotlib import pyplot
 from scipy.misc import toimage
 from keras.models import model_from_json
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
-from keras import backend as K
-from keras.regularizers import l2, activity_l2
+
 from keras.callbacks import ModelCheckpoint
+from keras.applications.resnet50 import ResNet50
+from keras.preprocessing import image
+from keras.applications.resnet50 import preprocess_input, decode_predictions
+from keras import backend as K
+
 K.set_image_dim_ordering('th')
 
-lr = 0.02 
+lr = 0.01 #PRIMER RESULTADO DECENTE
 # 0.03 decay 1e-4
  
 batch_size = 128#128   #10
 nb_classes = 2    #5
-nb_epoch = 1 #200#400   #25
-data_augmentation = False #Ver seccin de data augmentation para activar opciones (line 206 aprox)
+nb_epoch = 10 #200#400   #25
+data_augmentation = True #Ver seccin de data augmentation para activar opciones (line 206 aprox)
 
 side = "left" #right
 etiquetas = 17562 #numleft = 17562 #numrigth = 17562        <------> labels
-nb_train_samples= 15000#4000*2
-nb_test_samples= 2562#692*2
+nb_train_samples= 20#4000*2 #15000
+nb_test_samples= 20#692*2 #2562
 nb_samples=nb_train_samples + nb_test_samples
 same=0 #Flag Xtrain = Xtest   otherwise 0 =->Xtrain and test different
 
@@ -43,7 +44,7 @@ left (de 1 a 2.74)
 Right (de 1 a 2.79)
 0: 12938  1:4624
 '''
-data_per_classes =0 #flag activar distribcion 50/50
+data_per_classes =1 #flag activar distribcion 50/50
 num_zero_class= nb_train_samples/2
 num_one_class = nb_train_samples/2
 
@@ -133,6 +134,11 @@ else:
   Y_test = Y_label[nb_train_samples:nb_samples]
   print "Diferente"
 
+
+print 'Data Train'
+unique, counts = numpy.unique(Y_train, return_counts=True)
+print numpy.asarray((unique, counts)).T
+print 'Data Test'
 unique, counts = numpy.unique(Y_test, return_counts=True)
 print numpy.asarray((unique, counts)).T
 
@@ -152,56 +158,12 @@ print 'Label Sample categorical format:' , Y_train.shape[1:]
 
 print '------------------------------'
 print 'Compile model...'
-model = Sequential()
 
-model.add(Convolution2D(16, 3, 3, border_mode='same', input_shape=X_train.shape[1:]))
-#model.add(BatchNormalization())
-model.add(Activation('relu'))
+model = ResNet50(include_top=False, weights='imagenet', input_shape=(img_channels, img_rows, img_cols))
+model.layers.pop()
+model.add(Dense(nb_classes, activation='softmax'))
 
-model.add(Convolution2D(16, 3, 3,border_mode='same'))
-#model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-  
-model.add(Convolution2D(32, 3, 3, border_mode='same'))
-#model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(Convolution2D(32, 3, 3,border_mode='same'))
-#model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-
-model.add(Convolution2D(64, 3, 3, border_mode='same'))
-#model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(Convolution2D(64, 3, 3,border_mode='same'))
-#model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-
-model.add(Convolution2D(96, 3, 3,border_mode='same'))
-#model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-
-model.add(Convolution2D(96, 3, 3,border_mode='same'))
-#model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-'''
-model.add(Convolution2D(128, 3, 3,border_mode='same'))
-#model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
-'''
-model.add(Flatten())
-model.add(Dropout(0.5))
-model.add(Dense(96)) #W_regularizer=l2(0.00005), activity_regularizer=activity_l2(0.00005)
-model.add(Activation('relu'))
-model.add(Dense(nb_classes))
-model.add(Activation('softmax'))
-
-decay = 1e-5
+decay = 0#7*1e-5
 # let's train the model using SGD + momentum (how original).
 sgd = SGD(lr=lr, decay=decay, momentum=0.9, nesterov=True)  #lr=0.005 #decay=1e-6
 model.compile(loss='categorical_crossentropy',
@@ -246,17 +208,12 @@ else:
 
     # this will do preprocessing and realtime data augmentation
     datagen = ImageDataGenerator(
-        featurewise_center=True,  # set input mean to 0 over the dataset
-        samplewise_center=False,  # set each sample mean to 0
-        featurewise_std_normalization=True,  # divide inputs by std of the dataset
-        samplewise_std_normalization=False,  # divide each input by its std
-        zca_whitening=False,  # apply ZCA whitening
-        zoom_range = [0.8, 1], #Zoom random crops
-        rotation_range=0,  # randomly rotate images in the range (degrees, 0 to 180)
-        width_shift_range=0,  # randomly shift images horizontally (fraction of total width)
-        height_shift_range=0,  # randomly shift images vertically (fraction of total height)
-        horizontal_flip=False,  # randomly flip images
-        vertical_flip=False)  # randomly flip images
+        rotation_range=0,
+        zoom_range=[0.8, 1],
+        fill_mode='nearest',
+        horizontal_flip=False,
+        vertical_flip=True,
+        dim_ordering=K.image_dim_ordering())  # randomly flip images
 
     # compute quantities required for featurewise normalization
     # (std, mean, and principal components if ZCA whitening is applied)
@@ -264,7 +221,7 @@ else:
 
     # fit the model on the batches generated by datagen.flow()
     hist = model.fit_generator(datagen.flow(X_train, Y_train,
-                        batch_size=batch_size, shuffle=True),
+                        batch_size=batch_size), #save_to_dir='da'
                         samples_per_epoch=X_train.shape[0],
                         nb_epoch=nb_epoch,
                         validation_data=(X_test, Y_test),callbacks=callbacks_list)
@@ -292,43 +249,32 @@ numpy.save('hist/test_loss.npy',test_loss)
 pyplot.figure(figsize=(19,12),dpi=100)
 pyplot.suptitle('lr ='+str(lr)+ ' Decay='+str(decay)+' Train: '+str(nb_train_samples) + '  ' + 'Test: '+str(nb_test_samples), fontsize="x-large")
 
-pyplot.subplot(2,2,1)
+pyplot.subplot(2,1,1)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('accuracy')
 pyplot.axis([-1, nb_epoch*1.01, 0.4, 1.1])
-pyplot.title('Train acc')
-pyplot.plot(epocas,train_acc)
+pyplot.title('Train acc - Test acc')
+pyplot.plot(epocas,train_acc, label="train acc")
+pyplot.plot(epocas,test_acc, label="test acc")
+pyplot.legend(loc=2)
 pyplot.grid()
 
-pyplot.subplot(2,2,3)
+pyplot.subplot(2,1,2)
 pyplot.xlabel('Epoch')
 pyplot.ylabel('loss')
-pyplot.axis([-1, nb_epoch*1.01, 0, 0.8])
-pyplot.title('Train loss')
-pyplot.plot(epocas,train_loss)
-pyplot.grid()
-
-pyplot.subplot(2,2,2)
-pyplot.xlabel('Epoch')
-pyplot.ylabel('accuracy')
-pyplot.axis([-1, nb_epoch*1.01, 0.4, 1.1])
-pyplot.title('Test acc')
-pyplot.plot(epocas,test_acc)
-pyplot.grid()
-
-pyplot.subplot(2,2,4)
-pyplot.xlabel('Epoch')
-pyplot.ylabel('loss')
-pyplot.axis([-1, nb_epoch*1.01, 0, 0.8])
-pyplot.title('Test loss')
-pyplot.plot(epocas,test_loss)
+pyplot.axis([-1, nb_epoch*1.01, 0, 1])
+pyplot.title('Train loss - Test loss')
+pyplot.plot(epocas,train_loss,label="train loss")
+pyplot.plot(epocas,test_loss,label="test loss")
+pyplot.legend(loc=2)
 pyplot.grid()
 
 pyplot.savefig('graficas.png')
 
 pyplot.show()
 
-
+print 'Max Test Acc: ', max(test_acc)
+print 'Min Test Loss: ', min(test_loss)
 ###########################################################################################
 # saving model
 model_json = model.to_json()
