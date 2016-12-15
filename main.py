@@ -67,7 +67,7 @@ def split_data(X_data, Y_label,nb_train_samples, nb_samples, nb_classes, same):
 	
 
 def get_data(nb_train_samples,nb_test_samples, etiquetas, side, img_channels, img_rows, img_cols,  same, data_per_classes,nb_classes):
-	nb_test_samples = nb_train_samples + nb_test_samples
+	nb_samples = nb_train_samples + nb_test_samples
 
 	X_data = numpy.zeros((nb_samples, img_channels, img_rows, img_cols), dtype="uint8")
 	Y_label = numpy.zeros((etiquetas,), dtype="uint8")
