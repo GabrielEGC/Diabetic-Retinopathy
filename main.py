@@ -198,7 +198,7 @@ def plot_hist(hist, nb_epoch, name):
 	numpy.save('hist/test_loss.npy',test_loss)
 
 	pyplot.figure(figsize=(19,12),dpi=100)
-	pyplot.suptitle('lr ='+str(lr)+ ' Decay='+str(decay)+' Train ='+str(nb_train_samples) + ' Test ='+str(nb_test_samples) + ' CNN: ' + name, fontsize="x-large")
+	pyplot.suptitle(name + ' - ' +'lr ='+str(lr)+' - ' +'[Train Validation]= '+'['+str(nb_train_samples) +' ' +str(nb_test_samples)+']', fontsize="x-large")
 
 	pyplot.subplot(2,1,1)
 	pyplot.xlabel('Epoch')
@@ -217,15 +217,27 @@ def plot_hist(hist, nb_epoch, name):
 	pyplot.title('Train loss - Test loss')
 	pyplot.plot(epocas,train_loss,label="train loss")
 	pyplot.plot(epocas,test_loss,label="test loss")
-	pyplot.legend(loc=2)
+	pyplot.legend(loc=3)
 	pyplot.grid()
 
 	pyplot.savefig('graficas.png')
 
-	pyplot.show()
+	max_index = numpy.argmax(test_acc)
+	test_max_acc = test_acc[max_index]
+	loss = test_loss[max_index] 
 
-	print 'Max Test Acc: ', max(test_acc)
-	print 'Min Test Loss: ', min(test_loss)
+	min_index = numpy.argmin(test_loss)
+	test_min_loss = test_loss[min_index]
+	acc = test_acc[min_index]
+	print ' '
+	print '############ Max Val Accuracy ############'
+	print 'Max Val ACC: ', test_max_acc , ' Epoch: ', max_index+1, ' its loss: ', loss,  ' its train acc: ' ,train_acc[max_index]  , ' its train loss: ', train_loss[max_index] 
+	print ' '
+	print '############ Min Val Loss ############'
+	print 'Min Val LOSS: ', test_min_loss, ' Epoch: ', min_index +1, ' its acc: ', acc, ' its train acc: ', train_acc[min_index]  , ' its train loss: ', train_loss[min_index]
+	print ' '
+
+	pyplot.show()
 
 
 ###________MAIN____________###
