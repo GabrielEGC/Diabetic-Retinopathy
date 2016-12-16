@@ -261,7 +261,7 @@ if __name__ == "__main__":
 	nesterov = True
 	batch_size = 64
 	nb_epoch = 100
-	data_augmentation = False 
+	data_augmentation = True 
 
 	print "####################### GET DATA ###############################"
 	(X_train, Y_train, X_test, Y_test) = get_data(nb_train_samples=nb_train_samples, nb_test_samples=nb_test_samples, 
