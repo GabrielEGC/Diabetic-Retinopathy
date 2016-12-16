@@ -269,7 +269,7 @@ if __name__ == "__main__":
 												   img_cols=img_cols,same=same,data_per_classes=data_per_classes, nb_classes=nb_classes)
 	input_shape = X_train.shape[1:]
 	print "####################### CREATE MODEL ###########################"
-	model, name = vgg_net(input_shape = input_shape,nb_classes= nb_classes)
+	model, name = vgg_net_noFC(input_shape = input_shape,nb_classes= nb_classes)
 	model = compile_model(model = model, lr = lr, decay = decay, momentum = momentum, nesterov = nesterov)
 	print "####################### TRAIN MODEL ###########################"
 	hist = train_model(model = model, X_train=X_train, Y_train=Y_train, X_test=X_test, Y_test=Y_test, batch_size=batch_size, nb_epoch=nb_epoch, data_augmentation=data_augmentation)

@@ -101,3 +101,12 @@ def vgg_net(input_shape, nb_classes):
 	model = Model(input=model.input, output=top_model)
 	print "VGG16"
 	return model, "VGG16"
+
+def vgg_net_noFC(input_shape, nb_classes):
+	model = VGG16(include_top=False, weights='imagenet', input_shape=input_shape)
+	x = Flatten()(model.output)
+	x = Dropout(0.5)(x)
+	top_model = Dense(nb_classes, activation='softmax')(x)
+	model = Model(input=model.input, output=top_model)
+	print "VGG16 noFC"
+	return model, "VGG16 noFC"
