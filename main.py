@@ -272,7 +272,7 @@ if __name__ == "__main__":
 	momentum = 0.9
 	nesterov = True
 	batch_size = 64
-	nb_epoch = 100
+	nb_epoch = 60
 	data_augmentation = True 
 
 	print "####################### GET DATA ###############################"
