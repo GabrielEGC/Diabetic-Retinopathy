@@ -336,13 +336,13 @@ if __name__ == "__main__":
 	nb_classes = 2
 	
 	# TRAIN MODEL INFO	
-	lr = 0.001
+	lr = 0.01
 	decay = 0
-	momentum = 0.9
+	momentum = 0.9 
 	nesterov = True
 	batch_size = 128
 	nb_epoch = 100
-	data_augmentation = False 
+	data_augmentation = True 
 
 	print "####################### GET DATA ###############################"
 	(X_train, Y_train, X_val, Y_val, X_test, Y_test) = get_data(img_rows=img_rows, img_cols=img_cols, side=side, same=same, data_per_classes=data_per_classes, nb_classes=nb_classes)
