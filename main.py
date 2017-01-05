@@ -121,9 +121,9 @@ def get_data(img_rows, img_cols,side,  same, data_per_classes,nb_classes):
 		nb_samples=nb_train_samples + nb_val_samples + nb_test_samples
 	elif data_per_classes ==1:
 		print "______DIST 50/50______"
-		nb_train_samples= 4000*2#3692*2 
-		nb_val_samples = 692*2#500*2 
-		nb_test_samples= 0#500*2 
+		nb_train_samples= 3692*2 #4000*2
+		nb_val_samples = 500*2 #692*2
+		nb_test_samples= 500*2 
 		nb_samples=nb_train_samples + nb_val_samples + nb_test_samples
 
 
@@ -342,7 +342,7 @@ if __name__ == "__main__":
 	nesterov = True
 	batch_size = 128
 	nb_epoch = 100
-	data_augmentation = False 
+	data_augmentation = True 
 
 	print "####################### GET DATA ###############################"
 	(X_train, Y_train, X_val, Y_val, X_test, Y_test) = get_data(img_rows=img_rows, img_cols=img_cols, side=side, same=same, data_per_classes=data_per_classes, nb_classes=nb_classes)
