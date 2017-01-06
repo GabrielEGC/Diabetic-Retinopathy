@@ -342,13 +342,13 @@ if __name__ == "__main__":
 	nesterov = True
 	batch_size = 128
 	nb_epoch = 100
-	data_augmentation = False 
+	data_augmentation = True 
 
 	print "####################### GET DATA ###############################"
 	(X_train, Y_train, X_val, Y_val, X_test, Y_test) = get_data(img_rows=img_rows, img_cols=img_cols, side=side, same=same, data_per_classes=data_per_classes, nb_classes=nb_classes)
 	input_shape = X_train.shape[1:]
 	print "####################### CREATE MODEL ###########################"
-	model, name = model_1(input_shape = input_shape,nb_classes= nb_classes)
+	model, name = model_1_1(input_shape = input_shape,nb_classes= nb_classes)
 	model = compile_model(model = model, lr = lr, decay = decay, momentum = momentum, nesterov = nesterov)
 	print "####################### TRAIN MODEL ###########################"
 	hist = train_model(model = model, X_train=X_train, Y_train=Y_train, X_val=X_val, Y_val=Y_val,X_test=X_test, Y_test=Y_test, batch_size=batch_size, nb_epoch=nb_epoch, data_augmentation=data_augmentation)
