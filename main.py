@@ -336,7 +336,7 @@ if __name__ == "__main__":
 	nb_classes = 2
 	
 	# TRAIN MODEL INFO	
-	lr = 0.01
+	lr = 0.1
 	decay = 0
 	momentum = 0.9 
 	nesterov = True
