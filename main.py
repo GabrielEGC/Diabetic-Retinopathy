@@ -37,17 +37,25 @@ def data_50_50(aux, Y_label,nb_train_samples,nb_val_samples, nb_test_samples):
 	data_t_0 = data_0[0:num_zero_train]
 	data_t_1 = data_1[0:num_one_train]
 
+	data_train = numpy.concatenate((data_t_0,data_t_1),axis=0)
+	numpy.random.shuffle(data_train)
+
 	data_val_0 = data_0[num_zero_train:(num_zero_train + num_zero_val)]
 	data_val_1 = data_1[num_one_train:(num_one_train + num_one_val)]
+
+	data_val = numpy.concatenate((data_val_0,data_val_1),axis=0)
+	numpy.random.shuffle(data_val)
 
 	data_test_0 = data_0[(num_zero_train + num_zero_val):(num_zero_train + num_zero_val + num_zero_test)]
 	data_test_1 =data_1[(num_one_train + num_one_val):(num_one_train + num_one_val + num_one_test)]
 
+	data_test = numpy.concatenate((data_test_0,data_test_1),axis=0)
+	numpy.random.shuffle(data_test)
 	#print 'train samples' , len(data_t_0)+len(data_t_1) #+ data_t_1.shape(0)
 	#print 'val samples' , len(data_val_0)+len(data_val_1)#+ data_val_1.shape(0)
 	#print 'test samples' , len(data_test_0)+len(data_test_1) #+ data_test_1.shape(0)
 
-	data = numpy.concatenate((data_t_0,data_t_1,data_val_0,data_val_1,data_test_0,data_test_1),axis=0)
+	data = numpy.concatenate((data_train,data_val,data_test),axis=0)
 
 	print 'TOTAL', len(data)
 	aux = data[:,0] #nombre de imagenes
@@ -336,23 +344,34 @@ if __name__ == "__main__":
 	nb_classes = 2
 	
 	# TRAIN MODEL INFO	
-	lr = 0.001
-	decay = 0
+	lr = 0.0001
+	decay = 0.000005
 	momentum = 0.9 
 	nesterov = True
 	batch_size = 64
 	nb_epoch = 80
 	data_augmentation = True 
+	entrenar = 1
 
 	print "####################### GET DATA ###############################"
 	(X_train, Y_train, X_val, Y_val, X_test, Y_test) = get_data(img_rows=img_rows, img_cols=img_cols, side=side, same=same, data_per_classes=data_per_classes, nb_classes=nb_classes)
 	input_shape = X_train.shape[1:]
 	print "####################### CREATE MODEL ###########################"
 	model, name = vgg_net_noFC(input_shape = input_shape,nb_classes= nb_classes)
-	model = compile_model(model = model, lr = lr, decay = decay, momentum = momentum, nesterov = nesterov)
-	print "####################### TRAIN MODEL ###########################"
-	hist = train_model(model = model, X_train=X_train, Y_train=Y_train, X_val=X_val, Y_val=Y_val,X_test=X_test, Y_test=Y_test, batch_size=batch_size, nb_epoch=nb_epoch, data_augmentation=data_augmentation)
-	print "####################### GRAPHICS ###############################"
-	#Graphics#
-	plot_hist(hist=hist,nb_epoch=nb_epoch, name=name, Y_train=Y_train, Y_val=Y_val, Y_test=Y_test, DA = data_augmentation)
 	
+	if entrenar == 1:
+		print "Compile model"
+		model = compile_model(model = model, lr = lr, decay = decay, momentum = momentum, nesterov = nesterov)
+		print "####################### TRAIN MODEL ###########################"
+		hist = train_model(model = model, X_train=X_train, Y_train=Y_train, X_val=X_val, Y_val=Y_val,X_test=X_test, Y_test=Y_test, batch_size=batch_size, nb_epoch=nb_epoch, data_augmentation=data_augmentation)
+		print "####################### GRAPHICS ###############################"
+		#Graphics#
+		plot_hist(hist=hist,nb_epoch=nb_epoch, name=name, Y_train=Y_train, Y_val=Y_val, Y_test=Y_test, DA = data_augmentation)
+	elif entrenar == 0:
+		print "###################### TRY TEST ###############################"
+		print "Import weights"
+		model.load_weights('best-model/model-w-best-acc.hdf5')
+		print "Compile model"
+		model = compile_model(model = model, lr = lr, decay = decay, momentum = momentum, nesterov = nesterov)
+		scores = model.evaluate(X_test, Y_test, verbose=0)
+		print("Accuracy model: %.2f%%" % (scores[1]*100))
