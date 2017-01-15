@@ -344,12 +344,12 @@ if __name__ == "__main__":
 	nb_classes = 2
 	
 	# TRAIN MODEL INFO	
-	lr = 0.0001
-	decay = 0.000005
+	lr = 0.00001
+	decay = 0
 	momentum = 0.9 
 	nesterov = True
 	batch_size = 64
-	nb_epoch = 80
+	nb_epoch = 120
 	data_augmentation = True 
 	entrenar = 1
 
