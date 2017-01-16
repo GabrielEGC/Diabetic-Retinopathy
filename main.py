@@ -344,8 +344,8 @@ if __name__ == "__main__":
 	nb_classes = 2
 	
 	# TRAIN MODEL INFO	
-	lr = 0.0001
-	decay = 0.00005
+	lr = 0.00005
+	decay = 0
 	momentum = 0.9 
 	nesterov = True
 	batch_size = 64
