@@ -344,12 +344,12 @@ if __name__ == "__main__":
 	nb_classes = 2
 	
 	# TRAIN MODEL INFO	
-	lr = 0.0001
-	decay = 0.00005
+	lr = 0.01
+	decay = 0
 	momentum = 0.9 
 	nesterov = True
-	batch_size = 64
-	nb_epoch = 80
+	batch_size = 128
+	nb_epoch = 100
 	data_augmentation = True 
 	entrenar = 1
 
@@ -357,7 +357,7 @@ if __name__ == "__main__":
 	(X_train, Y_train, X_val, Y_val, X_test, Y_test) = get_data(img_rows=img_rows, img_cols=img_cols, side=side, same=same, data_per_classes=data_per_classes, nb_classes=nb_classes)
 	input_shape = X_train.shape[1:]
 	print "####################### CREATE MODEL ###########################"
-	model, name = vgg_net_noFC(input_shape = input_shape,nb_classes= nb_classes)
+	model, name = model_1_nfc(input_shape = input_shape,nb_classes= nb_classes)
 	
 	if entrenar == 1:
 		print "Compile model"
