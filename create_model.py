@@ -166,6 +166,55 @@ def model_2(input_shape, nb_classes):
 	model.add(Activation('softmax'))
 	print "MODEL 2"
 	return model, "MODEL 2"
+
+def model_2_nfc(input_shape, nb_classes):
+	model = Sequential()
+
+	model.add(Convolution2D(16, 3, 3, border_mode='same', input_shape=input_shape))
+	#model.add(BatchNormalization())
+	model.add(Activation('relu'))
+	model.add(Convolution2D(16, 3, 3,border_mode='same'))
+	#model.add(BatchNormalization())
+	model.add(Activation('relu'))
+	model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+
+	model.add(Convolution2D(32, 3, 3, border_mode='same'))
+	#model.add(BatchNormalization())
+	model.add(Activation('relu'))
+	model.add(Convolution2D(32, 3, 3,border_mode='same'))
+	#model.add(BatchNormalization())
+	model.add(Activation('relu'))
+	model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+
+	model.add(Convolution2D(64, 3, 3, border_mode='same'))
+	#model.add(BatchNormalization())
+	model.add(Activation('relu'))
+	model.add(Convolution2D(64, 3, 3,border_mode='same'))
+	#model.add(BatchNormalization())
+	model.add(Activation('relu'))
+	model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+
+	model.add(Convolution2D(96, 3, 3,border_mode='same'))
+	#model.add(BatchNormalization())
+	model.add(Activation('relu'))
+	model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+
+	model.add(Convolution2D(96, 3, 3,border_mode='same'))
+	#model.add(BatchNormalization())
+	model.add(Activation('relu'))
+	model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+
+	model.add(Convolution2D(128, 3, 3,border_mode='same'))
+	#model.add(BatchNormalization())
+	model.add(Activation('relu'))
+	model.add(MaxPooling2D(pool_size=(3, 3),strides=(2,2)))
+
+	model.add(Flatten())
+	model.add(Dropout(0.5))
+	model.add(Dense(nb_classes))
+	model.add(Activation('softmax'))
+	print "MODEL 2 nfc"
+	return model, "MODEL 2 nfc"
 ############################################################################################################################
 
 #############################################VGG NET########################################################################
@@ -190,5 +239,5 @@ def vgg_net_noFC(input_shape, nb_classes):
 	model = Model(input=model.input, output=top_model)
 	print "VGG16 noFC"
 	return model, "VGG16 noFC"
-	
+
 ############################################################################################################################
