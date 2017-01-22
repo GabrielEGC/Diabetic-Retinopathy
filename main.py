@@ -321,6 +321,39 @@ def plot_hist(hist, nb_epoch, name,Y_train, Y_val, Y_test, DA):
 
 	pyplot.show()
 
+def extra_values(X_test, Y_test):
+	TP = 0.0
+	TN = 0.0
+	FP = 0.0
+	FN = 0.0
+	n = len(X_test)
+	print n
+	for i in range(0,n):
+		label = Y_test[i][0]
+		x = numpy.expand_dims(X_test[i], axis=0)
+		prediction = model.predict(x)
+		prediction = numpy.round(prediction)
+		prediction = prediction[0][0]
+		if label==1.0 and label==prediction:
+			#TRUE POSITIVE
+			TP = TP+1.0
+		elif label==1.0 and label!=prediction:
+			#FALSE NEGATIVE
+			FN = FN + 1.0
+		elif label==0.0 and label==prediction:
+			#TRUE NEGATIVE
+			TN = TN + 1.0
+		elif label == 0.0 and label!=prediction:
+			#FALSE POSITIVE
+			FP = FP + 1.0
+
+	print 'TRUE POSITIVE: ', TP
+	print 'FALSE NEGATIVE: ', FN
+	print 'TRUE NEGATIVE: ', TN
+	print 'FALSE POSITIVE: ', FP
+	print '----------------------'
+	print 'Sensitive: ', TP / (TP + FN) * 100
+	print 'Specificity: ', TN / (FP + TN) * 100
 
 ###________MAIN____________###
 if __name__ == "__main__":
@@ -344,20 +377,20 @@ if __name__ == "__main__":
 	nb_classes = 2
 	
 	# TRAIN MODEL INFO	
-	lr = 0.01
+	lr = 0.0001
 	decay = 0
 	momentum = 0.9 
 	nesterov = True
-	batch_size = 128
-	nb_epoch = 100
+	batch_size = 64
+	nb_epoch = 80
 	data_augmentation = True 
-	entrenar = 1
+	entrenar = 0
 
 	print "####################### GET DATA ###############################"
 	(X_train, Y_train, X_val, Y_val, X_test, Y_test) = get_data(img_rows=img_rows, img_cols=img_cols, side=side, same=same, data_per_classes=data_per_classes, nb_classes=nb_classes)
 	input_shape = X_train.shape[1:]
 	print "####################### CREATE MODEL ###########################"
-	model, name = model_2_nfc(input_shape = input_shape,nb_classes= nb_classes)
+	model, name = vgg_net(input_shape = input_shape,nb_classes= nb_classes)
 	
 	if entrenar == 1:
 		print "Compile model"
@@ -375,3 +408,4 @@ if __name__ == "__main__":
 		model = compile_model(model = model, lr = lr, decay = decay, momentum = momentum, nesterov = nesterov)
 		scores = model.evaluate(X_test, Y_test, verbose=0)
 		print("Accuracy model: %.2f%%" % (scores[1]*100))
+		extra_values(X_test=X_test, Y_test=Y_test)
