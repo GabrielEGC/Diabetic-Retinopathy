@@ -123,9 +123,9 @@ def get_data(img_rows, img_cols,side,  same, data_per_classes,nb_classes):
 	# DATA SPLIT
 	if data_per_classes == 0:
 		print "______DIST ORIGINAL______"
-		nb_train_samples= 14000#14162 
-		nb_val_samples = 3562#1700 
-		nb_test_samples= 0#1700 
+		nb_train_samples= 12294#14162 
+		nb_val_samples = 2634#1700 
+		nb_test_samples= 2634#1700 
 		nb_samples=nb_train_samples + nb_val_samples + nb_test_samples
 	elif data_per_classes ==1:
 		print "______DIST 50/50______"
@@ -225,6 +225,9 @@ def train_model(model, X_train, Y_train, X_val,Y_val,X_test, Y_test,batch_size, 
 	checkpoint_acc = ModelCheckpoint(filepath_acc, monitor='val_acc', verbose=1, save_best_only=True,save_weights_only=True, mode='max')
 	callbacks_list = [checkpoint_loss,checkpoint_acc]
 
+	#Activate with the original distribution of data (data_per_classes =0)
+	class_weight={0:1. , 1:2.74}
+
 	if not data_augmentation:
 		print('Not using data augmentation.')
 		hist = model.fit(X_train, Y_train, 
@@ -252,7 +255,7 @@ def train_model(model, X_train, Y_train, X_val,Y_val,X_test, Y_test,batch_size, 
 	                        batch_size=batch_size,shuffle=True), #save_to_dir='da'
 	                        samples_per_epoch=X_train.shape[0],
 	                        nb_epoch=nb_epoch,
-	                        validation_data=(X_val, Y_val),callbacks=callbacks_list)
+	                        validation_data=(X_val, Y_val),callbacks=callbacks_list, class_weight=class_weight)
 
 	#scores = model.evaluate(X_test, Y_test, verbose=0)
 	#print("Accuracy model: %.2f%%" % (scores[1]*100))
@@ -352,7 +355,7 @@ def extra_values(X_test, Y_test):
 	print 'TRUE NEGATIVE: ', TN
 	print 'FALSE POSITIVE: ', FP
 	print '----------------------'
-	print 'Sensitive: ', TP / (TP + FN) * 100
+	print 'Sensitivity: ', TP / (TP + FN) * 100
 	print 'Specificity: ', TN / (FP + TN) * 100
 
 ###________MAIN____________###
@@ -370,27 +373,27 @@ if __name__ == "__main__":
 
 	img_rows, img_cols = 256, 256 # input image dimensions
 	same=0 #Flag Xtrain = Xval   otherwise 0 =->Xtrain and val different
-	data_per_classes =1 #flag activar distribcion 50/50
+	data_per_classes =0 #flag activar distribcion 50/50
 	side = 'left'
 
 	# CREATE MODEL INFO
 	nb_classes = 2
 	
 	# TRAIN MODEL INFO	
-	lr = 0.1
-	decay = 0
+	lr = 0.0001
+	decay = 0.00005
 	momentum = 0.9 
 	nesterov = True
-	batch_size = 128
-	nb_epoch = 100
+	batch_size = 64
+	nb_epoch = 80
 	data_augmentation = True 
-	entrenar = 1
+	entrenar = 0
 
 	print "####################### GET DATA ###############################"
 	(X_train, Y_train, X_val, Y_val, X_test, Y_test) = get_data(img_rows=img_rows, img_cols=img_cols, side=side, same=same, data_per_classes=data_per_classes, nb_classes=nb_classes)
 	input_shape = X_train.shape[1:]
 	print "####################### CREATE MODEL ###########################"
-	model, name = model_1(input_shape = input_shape,nb_classes= nb_classes)
+	model, name = vgg_net_noFC(input_shape = input_shape,nb_classes= nb_classes)
 	
 	if entrenar == 1:
 		print "Compile model"
