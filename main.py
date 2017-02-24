@@ -185,11 +185,14 @@ def get_data(img_rows, img_cols,side,  same, data_per_classes,nb_classes):
   		if i==nb_samples:
 			break
 	(X_train, Y_train,X_val, Y_val, X_test, Y_test) = split_data(X_data, Y_label,nb_train_samples, nb_val_samples,nb_test_samples , nb_classes, same)
-
+	print "one hot vector"
+	print "Before:", Y_train[0]
     # conviertiendo en vector one hot
+
 	Y_train = np_utils.to_categorical(Y_train, nb_classes=nb_classes)
 	Y_val = np_utils.to_categorical(Y_val, nb_classes=nb_classes)
-	Y_test = np_utils.to_categorical(Y_test,nb_classes=nb_classes) 
+	Y_test = np_utils.to_categorical(Y_test,nb_classes=nb_classes)
+	print "After:", Y_train[0]
 
 	print 'Image Sample format: ',X_train.shape[1:]
 	print 'Label Sample categorical format:' , Y_train.shape[1:]
@@ -332,11 +335,11 @@ def extra_values(X_test, Y_test):
 	n = len(X_test)
 	print n
 	for i in range(0,n):
-		label = Y_test[i][0]
+		label = Y_test[i][1]
 		x = numpy.expand_dims(X_test[i], axis=0)
 		prediction = model.predict(x)
 		prediction = numpy.round(prediction)
-		prediction = prediction[0][0]
+		prediction = prediction[0][1]
 		if label==1.0 and label==prediction:
 			#TRUE POSITIVE
 			TP = TP+1.0
